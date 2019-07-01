@@ -124,5 +124,26 @@ void WebotsRobotInterface::enableDevice(std::string device_name)    {
 /*          OTHER FUNCTIONS                   */
 /**********************************************/
 
+void WebotsRobotInterface::lockConnector(std::string connector_name, bool locktype)    {
+    std::string service_path = "/" + controllerName_ + "/" + connector_name + "/lock";
+    ros::ServiceClient lockClient = nh_->serviceClient<webots_ros::set_bool>(service_path);
+    webots_ros::set_bool lockRequest;
+    lockRequest.request.value = locktype;
+    if (!lockClient.call(lockRequest)) {
+        ROS_WARN("Couldnt't lock the connector '%s', please check if the service path %s is viable.", connector_name.c_str(), service_path.c_str());
+    }
+    else    {
+        if (locktype == true) {
+            ROS_INFO("Changed the lock state of connector '%s' to 'locked'", connector_name.c_str());
+        }
+        else    {
+            ROS_INFO("Changed the lock state of connector '%s' to 'unlocked'", connector_name.c_str());
+        }
+    }
+}
+
+
+
+
 void WebotsRobotInterface::broadcastTF(std::string parent_frame, std::string child_frame)  {
 }

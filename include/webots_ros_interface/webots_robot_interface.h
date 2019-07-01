@@ -6,6 +6,7 @@ This class includes several functions which can be used to easily interface your
 #include <std_msgs/Float32.h>
 #include <webots_ros/set_int.h>
 #include <webots_ros/set_float.h>
+#include <webots_ros/set_bool.h>
 
 class WebotsRobotInterface 
 {
@@ -63,13 +64,14 @@ public:
 /*          OTHER FUNCTIONS                   */
 /**********************************************/
 
-    void broadcastTF(std::string parent_frame, std::string child_frame);
-
     /**
-    * \brief Sets up the rqt_multiplot configuration file to display multiple touch sensors
-    * \param configuration_path  path of the configuration file, which needs to be updated
+    * \brief Allows to lock two connector devices 
+    * \param connector_name  name of the connector that should be locked
+    * \param lock_type       1 to lock, 0 to unlock
     */
-    //void setUpTouchMultiplot(const char *configuration_path);
+    void lockConnector(std::string connector_name, bool lock_type);
+
+    void broadcastTF(std::string parent_frame, std::string child_frame);
 
 
 
