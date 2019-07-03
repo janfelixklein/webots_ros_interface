@@ -24,8 +24,6 @@ bool WebotsRobotInterface::setUpMotorControl(std::string motorName, std::string 
             ROS_ERROR("Webots service not found, please check if your webots motor is named \"%s\"", motorName.c_str());
             return false;
         }
-        ROS_INFO("Position and Velocity clients successfully set-up for motor \"%s\" on controller: \"%s\"", motorName.c_str(), controllerName_.c_str());
-
         MotorVelocityClients.insert(std::make_pair(motorName, MotorVelocityClient));
 
         //initialize velocity control
@@ -35,19 +33,16 @@ bool WebotsRobotInterface::setUpMotorControl(std::string motorName, std::string 
         webots_ros::set_float set_velocity_srv;
         set_velocity_srv.request.value = 0.0;
 
-        if (MotorPositionClient.call(set_position_srv) && set_position_srv.response.success)    {
-            ROS_INFO("Position set to INFINITY for motor %s.", motorName.c_str());
-        }
-        else    {
-            ROS_ERROR("Failed to call service set_position on motor \"%s\".", motorName.c_str());
+        if (!MotorPositionClient.call(set_position_srv) || !set_position_srv.response.success)    {
+            ROS_ERROR("Failed to call service set_position on motor '%s' on robot '%s'", motorName.c_str(), controllerName_.c_str());
             return false;
         }
-        if (MotorVelocityClient.call(set_velocity_srv) && set_velocity_srv.response.success)    {
-            ROS_INFO("Velocity set to 0.0 for motor %s.", motorName.c_str());
-        }
-        else    {
-            ROS_ERROR("Failed to call service set_velocity on motor \"%s\".", motorName.c_str());
+        else if (!MotorVelocityClient.call(set_velocity_srv) || !set_velocity_srv.response.success)    {
+            ROS_ERROR("Failed to call service set_velocity on motor '%s' on robot '%s'", motorName.c_str(), controllerName_.c_str());
             return false;
+        }
+        else  {
+            ROS_INFO("Successfully set up %s-control of motor '%s' on robot '%s'", controlType.c_str(), motorName.c_str(), controllerName_.c_str());
         }
         return true;
 
@@ -56,15 +51,15 @@ bool WebotsRobotInterface::setUpMotorControl(std::string motorName, std::string 
         std::string MotorPositionServerPath = "/" + controllerName_ + "/" + motorName + "/set_position";
         ros::ServiceClient MotorPositionClient = nh_->serviceClient<webots_ros::set_float>(MotorPositionServerPath);
         if (!MotorPositionClient.waitForExistence(ros::Duration(0.5)))  {
-            ROS_ERROR("Webots service not found, please check if your webots motor is named \"%s\"", motorName.c_str());
+            ROS_ERROR("Webots service not found, please check if your webots motor is named '%s'", motorName.c_str());
             return false;
         }
-        ROS_INFO("Position client successfully set-up for motor \"%s\" on controller: \"%s\"", motorName.c_str(), controllerName_.c_str());
+        ROS_INFO("Successfully set up %s-control of motor '%s' on robot '%s'", controlType.c_str(), motorName.c_str(), controllerName_.c_str());
         MotorPositionClients.insert(std::make_pair(motorName, MotorPositionClient));
         return true;
     }
     else {
-        ROS_ERROR("ControlType wrongly specified, please specify either \"velocity\" for velocity-controlled motors or \"position\" for position-controlled motors");
+        ROS_ERROR("ControlType wrongly specified for motor '%s' on robot '%s', please specify either 'velocity' for velocity-controlled motors or 'position' for position-controlled motors", motorName.c_str(), controllerName_.c_str());
         return false;
     }
 }
@@ -112,10 +107,10 @@ void WebotsRobotInterface::enableDevice(std::string device_name)    {
     webots_ros::set_int enableRequest;
     enableRequest.request.value = 1;
     if (!enableClient.call(enableRequest)) {
-        ROS_WARN("Couldnt't enable device named %s ,please check if the service path %s is viable.", device_name.c_str(), device_path.c_str());
+        ROS_WARN("Couldnt't enable device named '%s' ,please check if the service path '%s' is viable.", device_name.c_str(), device_path.c_str());
     }
     else    {
-        ROS_INFO("Successfully enabled device named: %s", device_name.c_str());
+        ROS_INFO("Successfully enabled device '%s' on robot '%s'", device_name.c_str(), controllerName_.c_str());
     }
 }
 
@@ -140,10 +135,4 @@ void WebotsRobotInterface::lockConnector(std::string connector_name, bool lockty
             ROS_INFO("Changed the lock state of connector '%s' to 'unlocked'", connector_name.c_str());
         }
     }
-}
-
-
-
-
-void WebotsRobotInterface::broadcastTF(std::string parent_frame, std::string child_frame)  {
 }
