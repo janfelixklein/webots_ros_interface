@@ -1,4 +1,5 @@
 #include <webots_ros_interface/webots_robot_interface.h>
+
 //#include <tinyxml2.h>
 
 
@@ -12,88 +13,18 @@ WebotsRobotInterface::WebotsRobotInterface(ros::NodeHandle* nh, std::string cont
 /**********************************************/
 /*          MOTOR RELATED FUNCTIONS           */
 /**********************************************/
-bool WebotsRobotInterface::setUpMotorControl(std::string motorName, std::string controlType)   {
 
-    if (controlType == "velocity")   {
-        std::string MotorPositionServerPath = "/" + controllerName_ + "/" + motorName + "/set_position";
-        std::string MotorVelocityServerPath = "/" + controllerName_ + "/" + motorName + "/set_velocity";
-        ros::ServiceClient MotorPositionClient = nh_->serviceClient<webots_ros::set_float>(MotorPositionServerPath);
-        ros::ServiceClient MotorVelocityClient = nh_->serviceClient<webots_ros::set_float>(MotorVelocityServerPath);
-
-        if (!MotorPositionClient.waitForExistence(ros::Duration(0.5)))  {
-            ROS_ERROR("Webots service not found, please check if your webots motor is named \"%s\"", motorName.c_str());
-            return false;
-        }
-        MotorVelocityClients.insert(std::make_pair(motorName, MotorVelocityClient));
-
-        //initialize velocity control
-        webots_ros::set_float set_position_srv;
-        set_position_srv.request.value = INFINITY;
-
-        webots_ros::set_float set_velocity_srv;
-        set_velocity_srv.request.value = 0.0;
-
-        if (!MotorPositionClient.call(set_position_srv) || !set_position_srv.response.success)    {
-            ROS_ERROR("Failed to call service set_position on motor '%s' on robot '%s'", motorName.c_str(), controllerName_.c_str());
-            return false;
-        }
-        else if (!MotorVelocityClient.call(set_velocity_srv) || !set_velocity_srv.response.success)    {
-            ROS_ERROR("Failed to call service set_velocity on motor '%s' on robot '%s'", motorName.c_str(), controllerName_.c_str());
-            return false;
-        }
-        else  {
-            ROS_INFO("Successfully set up %s-control of motor '%s' on robot '%s'", controlType.c_str(), motorName.c_str(), controllerName_.c_str());
-        }
-        return true;
-
-    }
-    else if (controlType == "position")  {
-        std::string MotorPositionServerPath = "/" + controllerName_ + "/" + motorName + "/set_position";
-        ros::ServiceClient MotorPositionClient = nh_->serviceClient<webots_ros::set_float>(MotorPositionServerPath);
-        if (!MotorPositionClient.waitForExistence(ros::Duration(0.5)))  {
-            ROS_ERROR("Webots service not found, please check if your webots motor is named '%s'", motorName.c_str());
-            return false;
-        }
-        ROS_INFO("Successfully set up %s-control of motor '%s' on robot '%s'", controlType.c_str(), motorName.c_str(), controllerName_.c_str());
-        MotorPositionClients.insert(std::make_pair(motorName, MotorPositionClient));
-        return true;
-    }
-    else {
-        ROS_ERROR("ControlType wrongly specified for motor '%s' on robot '%s', please specify either 'velocity' for velocity-controlled motors or 'position' for position-controlled motors", motorName.c_str(), controllerName_.c_str());
-        return false;
-    }
+bool WebotsRobotInterface::setUpMotorControl(std::string motorName, std::string controlType="position", std::string cmdTopic="")   {
+    boost::shared_ptr< Motor > motor( new Motor(nh_, controllerName_, motorName, controlType, cmdTopic) );
+    motors[motorName] = motor;
 }
 
 void WebotsRobotInterface::sendMotorPosition(std::string motorName, double position)   {
-    webots_ros::set_float set_position_srv;
-    set_position_srv.request.value = position;
-    MotorPositionClients[motorName].call(set_position_srv);
+    motors[motorName]->sendPosition(position);
 }
 
 void WebotsRobotInterface::sendMotorVelocity(std::string motorName, double velocity)   {
-    webots_ros::set_float set_velocity_srv;
-    set_velocity_srv.request.value = velocity;
-    MotorVelocityClients[motorName].call(set_velocity_srv);
-}
-
-void WebotsRobotInterface::setupWheelCmdSubscriber(std::string left_wheel_cmd_topic, std::string right_wheel_cmd_topic)  {
-    left_wheel_sub = nh_->subscribe(left_wheel_cmd_topic, 1, &WebotsRobotInterface::leftWheelCmdCallback, this);
-    right_wheel_sub = nh_->subscribe(right_wheel_cmd_topic, 1, &WebotsRobotInterface::rightWheelCmdCallback, this);
-}
-
-void WebotsRobotInterface::leftWheelCmdCallback(const std_msgs::Float32::ConstPtr& msg) {
-    webots_ros::set_float WheelVelocitySrv;
-    double data = msg->data;
-    WheelVelocitySrv.request.value = 2*M_PI*data;
-    MotorVelocityClients["left_wheel"].call(WheelVelocitySrv);
-}
-
-void WebotsRobotInterface::rightWheelCmdCallback(const std_msgs::Float32::ConstPtr& msg) {
-
-    webots_ros::set_float WheelVelocitySrv;
-    double data = msg->data;
-    WheelVelocitySrv.request.value = 2*M_PI*data;
-    MotorVelocityClients["right_wheel"].call(WheelVelocitySrv);
+    motors[motorName]->sendVelocity(velocity);
 }
 
 /**********************************************/
@@ -119,6 +50,8 @@ void WebotsRobotInterface::enableDevice(std::string device_name)    {
 /*          OTHER FUNCTIONS                   */
 /**********************************************/
 
+// connector related
+
 void WebotsRobotInterface::lockConnector(std::string connector_name, bool locktype)    {
     std::string service_path = "/" + controllerName_ + "/" + connector_name + "/lock";
     ros::ServiceClient lockClient = nh_->serviceClient<webots_ros::set_bool>(service_path);
@@ -136,3 +69,11 @@ void WebotsRobotInterface::lockConnector(std::string connector_name, bool lockty
         }
     }
 }
+
+// void WebotsRobotInterface::connectorLockCmdCallback(const std_msgs::Bool::ConstPtr& msg) {
+//     lockConnector()
+// }
+
+// void WebotsRobotInterface::setupLockCmdSubscriber(std::string connector_name, std::string cmd_topic)  {
+//     connector_lock_sub_ = nh_->subscribe(cmd_topic, 1, &WebotsRobotInterface::connectorLockCmdCallback, this);
+// }

@@ -3,7 +3,8 @@ This class includes several functions which can be used to easily interface your
 */
 
 #include <ros/ros.h>
-#include <std_msgs/Float32.h>
+#include <webots_ros_interface/motor.h>
+#include <std_msgs/Bool.h>
 #include <webots_ros/set_int.h>
 #include <webots_ros/set_float.h>
 #include <webots_ros/set_bool.h>
@@ -26,7 +27,8 @@ public:
     * \param motorName    name of the motor that should be controlled
     * \param controlType  controlType, either "velocity" or "position"
     */
-    bool setUpMotorControl(std::string motorName, std::string controlType);
+
+    bool setUpMotorControl(std::string motorName, std::string controlType, std::string cmdTopic);
 
     /*
     * \brief send a single position command to a motor
@@ -42,13 +44,6 @@ public:
     */
     void sendMotorVelocity(std::string motorName, double velocity);
 
-
-    /**
-    * \brief Creates Subscriber for the left and the right wheel of a diff drive robot
-    * \param left_wheel_cmd_topic   topic name on which commands for the left wheel are published on
-    * \param right_wheel_cmd_topic  topic name on which commands for the right wheel are published on
-    */
-    void setupWheelCmdSubscriber(std::string left_wheel_cmd_topic, std::string right_wheel_cmd_topic);
 
 /**********************************************/
 /*          SENSOR RELATED FUNCTIONS          */
@@ -92,20 +87,6 @@ private:
 
 
     //Motor structure
-    std::map<std::string, ros::ServiceClient> MotorVelocityClients;
-    std::map<std::string, ros::ServiceClient> MotorPositionClients;
-
-
-    /**
-    * \brief Callbacks for Left and right wheel subscriber
-    * \param &msg   pointer for the incoming message
-    */
-    void leftWheelCmdCallback(const std_msgs::Float32::ConstPtr& msg);
-    void rightWheelCmdCallback(const std_msgs::Float32::ConstPtr& msg);
-
-
-    // subscriber for velocity messages for left and right wheel
-    ros::Subscriber left_wheel_sub;
-    ros::Subscriber right_wheel_sub;
+    std::map<std::string, boost::shared_ptr< Motor > > motors;
 
 };

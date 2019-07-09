@@ -111,12 +111,14 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
+  include ${catkin_INCLUDE_DIRS}
   include 
   ${catkin_INCLUDE_DIRS}  
   ${TinyXML2_INCLUDE_DIRS}
 )
 
 add_library(webots_ros_interface
+  src/motor.cpp
   src/webots_supervisor_interface.cpp
   include/webots_ros_interface/webots_supervisor_interface.h
   include/webots_ros_interface/webots_world_interface.h
