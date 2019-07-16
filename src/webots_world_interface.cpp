@@ -61,18 +61,15 @@ void WebotsWorldInterface::findController()    {
     nameSub_.shutdown();
 }
 
-
 void WebotsWorldInterface::controllerNameCb(const std_msgs::String::ConstPtr &name)   {
     controllerCount_++;
     controllerList_.push_back(name->data);
     ROS_INFO("Controller #%d: %s.", controllerCount_, controllerList_.back().c_str());
 }
 
-
 std::string WebotsWorldInterface::getControllerName()    {
     return controllerName_;
 }
-
 
 std::vector<std::string>  WebotsWorldInterface::getControllerList()  {
     return controllerList_;

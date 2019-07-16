@@ -4,6 +4,7 @@ This class includes several functions which can be used to easily interface your
 
 #include <ros/ros.h>
 #include <webots_ros_interface/motor.h>
+#include <webots_ros_interface/connector.h>
 #include <std_msgs/Bool.h>
 #include <webots_ros/set_int.h>
 #include <webots_ros/set_float.h>
@@ -64,6 +65,9 @@ public:
     * \param connector_name  name of the connector that should be locked
     * \param lock_type       1 to lock, 0 to unlock
     */
+
+    void setUpConnector(std::string connector_name, std::string cmd_topic);
+
     void lockConnector(std::string connector_name, bool lock_type);
 
     void broadcastTF(std::string parent_frame, std::string child_frame);
@@ -88,5 +92,6 @@ private:
 
     //Motor structure
     std::map<std::string, boost::shared_ptr< Motor > > motors;
+    std::map<std::string, boost::shared_ptr< Connector > > connectors;
 
 };

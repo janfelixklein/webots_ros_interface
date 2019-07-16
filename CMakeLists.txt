@@ -10,7 +10,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs webots_ros cmake_modules)
 
 ## System dependencies are found with CMake's conventions
-find_package(TinyXML2 REQUIRED)
+#find_package(TinyXML2 REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -111,13 +111,12 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include ${catkin_INCLUDE_DIRS}
   include 
   ${catkin_INCLUDE_DIRS}  
-  ${TinyXML2_INCLUDE_DIRS}
 )
 
 add_library(webots_ros_interface
+  src/connector.cpp
   src/motor.cpp
   src/webots_supervisor_interface.cpp
   include/webots_ros_interface/webots_supervisor_interface.h
@@ -128,7 +127,7 @@ add_library(webots_ros_interface
 )
 add_dependencies(webots_ros_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(webots_ros_interface
-  ${catkin_LIBRARIES} ${TinyXML2_LIBRARIES}
+  ${catkin_LIBRARIES}
 )
 
 
