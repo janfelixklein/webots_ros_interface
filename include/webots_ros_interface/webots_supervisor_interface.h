@@ -8,6 +8,9 @@ This class includes several functions which can be used to interface ROS with th
 #include <std_msgs/Float64.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <nav_msgs/Odometry.h>
+#include <tf/transform_datatypes.h>
+#include <tf/transform_broadcaster.h>
+
 
 class WebotsSupervisorInterface {
     public:
@@ -37,6 +40,8 @@ class WebotsSupervisorInterface {
 
         geometry_msgs::Vector3 robotTranslation_;
         geometry_msgs::Quaternion robotRotation_;
+
+        void broadcastTF(std::string parent_frame, std::string child_frame);
     
     
     private:
