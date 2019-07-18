@@ -314,3 +314,32 @@ void WebotsSupervisorInterface::calcOrientationDifference(std::string parent_fra
     
 
 }
+
+void WebotsSupervisorInterface::broadcastTF(std::string parent_frame, std::string child_frame)  {
+
+  geometry_msgs::Vector3 translation_gm;
+  geometry_msgs::Quaternion rotation_gm;
+
+
+  rotation_gm.y = robotRotation_.x;// * std::sin(M_PI/2);
+  rotation_gm.z = robotRotation_.y;// * std::sin(M_PI/2);
+  rotation_gm.x = robotRotation_.z;// * std::sin(M_PI/2);
+  rotation_gm.w = robotRotation_.w;// * std::cos(M_PI/2);
+
+  translation_gm.y = robotTranslation_.x;
+  translation_gm.z = robotTranslation_.y;
+  translation_gm.x = robotTranslation_.z;
+
+//  ROS_INFO("%f, %f, %f, %f", rotation_gm.x, rotation_gm.y, rotation_gm.z, rotation_gm.w);
+
+  tf::Vector3 translation;
+  tf::Quaternion rotation;
+  vector3MsgToTF(translation_gm, translation);
+  quaternionMsgToTF(rotation_gm, rotation);
+
+  static tf::TransformBroadcaster br;
+  tf::Transform transform;
+  transform.setOrigin(translation);
+  transform.setRotation(rotation);
+  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), parent_frame, child_frame));
+}
