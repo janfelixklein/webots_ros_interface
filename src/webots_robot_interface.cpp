@@ -14,9 +14,15 @@ WebotsRobotInterface::WebotsRobotInterface(ros::NodeHandle* nh, std::string cont
 /*          MOTOR RELATED FUNCTIONS           */
 /**********************************************/
 
-bool WebotsRobotInterface::setUpMotorControl(std::string motorName, std::string controlType="position", std::string cmdTopic="")   {
-    boost::shared_ptr< Motor > motor( new Motor(nh_, controllerName_, motorName, controlType, cmdTopic) );
-    motors[motorName] = motor;
+bool WebotsRobotInterface::setUpMotorControl(std::string motorName, std::string controlType="position", std::string interfaceType="", std::string cmdTopic="", std::string sensorTopic="", std::string actionName="")   {
+    if (interfaceType == "topic")   {
+        boost::shared_ptr< Motor > motor( new Motor(nh_, controllerName_, motorName, controlType, cmdTopic) );
+        motors[motorName] = motor;
+    }
+    else if (interfaceType == "action") {
+        boost::shared_ptr< Motor > motor( new Motor(nh_, controllerName_, motorName, controlType, sensorTopic, actionName) );
+        motors[motorName] = motor;
+    }
 }
 
 void WebotsRobotInterface::sendMotorPosition(std::string motorName, double position)   {

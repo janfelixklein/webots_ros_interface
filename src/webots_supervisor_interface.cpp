@@ -308,9 +308,6 @@ void WebotsSupervisorInterface::calcOrientationDifference(std::string parent_fra
     ROS_INFO("Rotation of child frame %s: %f, %f, %f, %f",child_frame.c_str(), child_rotation.x, child_rotation.y, child_rotation.z, child_rotation.w);
      
      
-    //n = wb_supervisor_field_get_count(children);
-
-
-    
+    //n = wb_supervisor_field_get_count(children);    
 
 }

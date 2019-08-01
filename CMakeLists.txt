@@ -7,7 +7,7 @@ add_compile_options(-std=c++11)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp std_msgs webots_ros cmake_modules)
+find_package(catkin REQUIRED COMPONENTS roscpp std_msgs webots_ros cmake_modules actionlib actionlib_msgs)
 
 ## System dependencies are found with CMake's conventions
 #find_package(TinyXML2 REQUIRED)
@@ -56,17 +56,19 @@ find_package(catkin REQUIRED COMPONENTS roscpp std_msgs webots_ros cmake_modules
 # )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
+add_action_files(
+   DIRECTORY action
+   FILES
+   position_control.action
 #   Action2.action
-# )
+)
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   actionlib_msgs
+   std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -100,7 +102,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp std_msgs webots_ros cmake_modules
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES webots_ros_interface
-  CATKIN_DEPENDS webots_ros
+  CATKIN_DEPENDS webots_ros actionlib_msgs
   #DEPENDS TinyXML2
 )
 
@@ -111,6 +113,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
+  include ${catkin_INCLUDE_DIRS}
   include 
   ${catkin_INCLUDE_DIRS}  
 )

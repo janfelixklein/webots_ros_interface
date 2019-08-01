@@ -29,7 +29,7 @@ public:
     * \param controlType  controlType, either "velocity" or "position"
     */
 
-    bool setUpMotorControl(std::string motorName, std::string controlType, std::string cmdTopic);
+    bool setUpMotorControl(std::string motorName, std::string controlType, std::string interfaceType, std::string cmdTopic, std::string sensorTopic, std::string actionName);
 
     /*
     * \brief send a single position command to a motor
